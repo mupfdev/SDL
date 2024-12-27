@@ -475,4 +475,16 @@
 #undef __3DS__
 #endif
 
+#ifdef __NGAGE__
+
+/**
+ * A preprocessor macro that is only defined if compiling for Nintendo 3DS.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PLATFORM_NGAGE 1
+
+#undef __NGAGE__
+#endif
+
 #endif /* SDL_platform_defines_h_ */
