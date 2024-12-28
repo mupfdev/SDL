@@ -25,13 +25,6 @@
 
 #include "yuv2rgb/yuv_rgb.h"
 
-#if defined SDL_PLATFORM_NGAGE
-float __floatunsisf(uint32_t a)
-{
-    return (float)a;
-}
-#endif
-
 #ifdef SDL_HAVE_YUV
 static bool IsPlanar2x2Format(SDL_PixelFormat format);
 #endif
