@@ -19,7 +19,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "math.h"
+#include <math.h>
+#include <stdarg.h>
 
 unsigned int __clzsi2(unsigned int x)
 {
@@ -69,4 +70,9 @@ float __floatunsisf(uint32_t a)
 bool __unorddf2(double a, double b)
 {
     return isnan(a) || isnan(b);
+}
+
+void va_copy(char *dest, char *src)
+{
+    *dest = *src;
 }
