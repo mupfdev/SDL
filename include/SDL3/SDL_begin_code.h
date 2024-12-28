@@ -318,6 +318,8 @@
 #  else
 #   define SDL_DECLSPEC
 #  endif
+# elif defined(SDL_PLATFORM_NGAGE)
+#  define SDL_DECLSPEC EXPORT_C
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
 #   define SDL_DECLSPEC __attribute__ ((visibility("default")))
