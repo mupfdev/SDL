@@ -37,9 +37,31 @@ typedef unsigned long uintptr_t;
 typedef signed long intptr_t;
 typedef long ssize_t;
 
+#define SDL_HAPTIC_DISABLED  1
 #define SDL_THREADS_DISABLED 1
-#define HAVE_MALLOC          1
-#define HAVE_MATH_H          1
-#define HAVE_STDIO_H         1
+
+#define HAVE_ATAN     1
+#define HAVE_ATAN2    1
+#define HAVE_COPYSIGN 1
+#define HAVE_COS      1
+#define HAVE_EXP      1
+#define HAVE_FABS     1
+#define HAVE_FLOOR    1
+#define HAVE_FMOD     1
+#define HAVE_ISINF    1
+#define HAVE_ISINFF   0
+#define HAVE_ISNAN    1
+#define HAVE_ISNANF   0
+#define HAVE_LOG      1
+#define HAVE_LOG10    1
+#define HAVE_MALLOC   1
+#define HAVE_MATH_H   1
+#define HAVE_MODF     1
+#define HAVE_POW      1
+#define HAVE_SCALBN   1
+#define HAVE_SIN      1
+#define HAVE_STDIO_H  1
+#define HAVE_SQRT     1
+#define HAVE_TAN      1
 
 #endif /* SDL_build_config_ngage_h_ */
