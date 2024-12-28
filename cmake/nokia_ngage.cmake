@@ -36,6 +36,9 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/stdlib/*.c"
   "${SDL3_SOURCE_DIR}/src/storage/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
+  "${SDL3_SOURCE_DIR}/src/thread/generic/syscond.c"
+  "${SDL3_SOURCE_DIR}/src/thread/generic/systls.c"
+  "${SDL3_SOURCE_DIR}/src/thread/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
@@ -69,4 +72,3 @@ set(UID3 0x10005D73) # SDL.dll UID
 build_dll(${PROJECT_NAME} dll ${UID1} ${UID2} ${UID3} "${SDL3_libs}")
 
 add_dependencies(${PROJECT_NAME}.dll ${PROJECT_NAME})
-
