@@ -27,6 +27,43 @@
 #include <unistd.h> // _exit(), etc.
 #endif
 
+#if defined(SDL_PLATFORM_NGAGE)
+unsigned int __clzsi2(unsigned int x)
+{
+    if (x == 0)
+    {
+        return 32;
+    }
+    unsigned int n = 0;
+
+    if (x <= 0x0000FFFF)
+    {
+        n += 16;
+        x <<= 16;
+    }
+    if (x <= 0x00FFFFFF)
+    {
+        n += 8;
+        x <<= 8;
+    }
+    if (x <= 0x0FFFFFFF)
+    {
+        n += 4;
+        x <<= 4;
+    }
+    if (x <= 0x3FFFFFFF)
+    {
+        n += 2;
+        x <<= 2;
+    }
+    if (x <= 0x7FFFFFFF)
+    {
+        n += 1;
+    }
+    return n;
+}
+#endif
+
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
