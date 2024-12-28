@@ -24,6 +24,10 @@
 #define SDL_build_config_h_
 
 #include <SDL3/SDL_platform_defines.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
@@ -37,8 +41,8 @@ typedef unsigned long uintptr_t;
 typedef signed long intptr_t;
 typedef long ssize_t;
 
-#define SDL_HAPTIC_DISABLED  1
-#define SDL_THREADS_DISABLED 1
+#define SDL_HAPTIC_DISABLED 1
+#define SDL_THREAD_NGAGE    1
 
 #define HAVE_ATAN     1
 #define HAVE_ATAN2    1
@@ -63,5 +67,12 @@ typedef long ssize_t;
 #define HAVE_STDIO_H  1
 #define HAVE_SQRT     1
 #define HAVE_TAN      1
+
+#define isnanf(x) SDL_uclibc_isnanf(x)
+#define isinff(x) SDL_uclibc_isinff(x);
+
+#if defined(SDL_PLATFORM_NGAGE)
+extern void va_copy(char* dest, char* src);
+#endif
 
 #endif /* SDL_build_config_ngage_h_ */
