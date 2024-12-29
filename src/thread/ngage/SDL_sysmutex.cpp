@@ -63,16 +63,23 @@ void SDL_LockMutex(SDL_Mutex *mutex)
     rmutex.Wait();
 }
 
-/* Not yet implemented.
 bool SDL_TryLockMutex(SDL_Mutex* mutex)
 {
     if (NULL == mutex) {
         SDL_SetError("Passed a NULL mutex.");
         return true;
     }
-    ...
+
+    RMutex rmutex;
+    rmutex.SetHandle(mutex->handle);
+
+    if (rmutex.Count() == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
-*/
 
 void SDL_UnlockMutex(SDL_Mutex *mutex)
 {
