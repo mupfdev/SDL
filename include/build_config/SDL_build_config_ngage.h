@@ -41,6 +41,7 @@ typedef unsigned long uintptr_t;
 typedef signed long intptr_t;
 typedef long ssize_t;
 
+#define SDL_FSOPS_POSIX     1
 #define SDL_HAPTIC_DISABLED 1
 #define SDL_THREAD_NGAGE    1
 
