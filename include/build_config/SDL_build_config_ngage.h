@@ -29,21 +29,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed long long int64_t;
-typedef unsigned long long uint64_t;
-typedef unsigned long uintptr_t;
-typedef signed long intptr_t;
-typedef long ssize_t;
-
-#define SDL_FSOPS_POSIX     1
-#define SDL_HAPTIC_DISABLED 1
-#define SDL_THREAD_NGAGE    1
+#define SDL_FSOPS_POSIX        1
+#define SDL_HAPTIC_DISABLED    1
+#define SDL_MAIN_NEEDED        1
+#define SDL_MAIN_USE_CALLBACKS 1
+#define SDL_THREAD_NGAGE       1
 
 #define HAVE_ATAN     1
 #define HAVE_ATAN2    1
