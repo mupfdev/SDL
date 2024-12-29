@@ -72,6 +72,9 @@
             /* Private platforms may have their own ideas about entry points. */
             #include "SDL_main_impl_private.h"
 
+        #elif defined(SDL_PLATFORM_NGAGE)
+            #define main __gccmain
+
         #elif defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */
@@ -130,6 +133,12 @@
             #endif
 
             /* end of SDL_PLATFORM_WINDOWS impls */
+
+        #if defined(SDL_PLATFORM_PRIVATE_MAIN)
+            int __gccmain(int argc, char *argv[])
+            {
+                return SDL_RunApp(argc, argv, SDL_main, NULL);
+            }
 
         #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
             int main(int argc, char *argv[])

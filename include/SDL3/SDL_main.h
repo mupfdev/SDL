@@ -138,6 +138,15 @@
         /* Private platforms may have their own ideas about entry points. */
         #include "SDL_main_private.h"
 
+    #elif defined(SDL_PLATFORM_NGAGE)
+        /*
+        On N-Gage, SDL provides a main function starts the actual
+        application.
+
+        If you provide this yourself, you may define SDL_MAIN_HANDLED
+        */
+        #define SDL_MAIN_AVAILABLE
+
     #elif defined(SDL_PLATFORM_WIN32)
         /* On Windows SDL provides WinMain(), which parses the command line and passes
            the arguments to your main function.
