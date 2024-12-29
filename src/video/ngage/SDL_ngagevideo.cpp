@@ -20,6 +20,12 @@
 */
 #include "SDL_internal.h"
 
+#ifdef NULL
+#undef NULL
+#endif
+
+#include <e32def.h>
+#include <NRenderer.h>
 #include "../SDL_sysvideo.h"
 #include "SDL_ngageevents_c.h"
 #include "SDL_ngageframebuffer_c.h"
@@ -81,7 +87,7 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     return device;
 }
 
-VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, NULL_ };
+VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))NULL_ };
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -90,11 +96,28 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 
 static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
 {
+    SDL_VideoData* phdata = (SDL_VideoData*)_this->internal;
+
+    phdata->NGAGE_Renderer = CNRenderer::NewL();
+    if (!phdata->NGAGE_Renderer) {
+        delete phdata->NGAGE_Renderer;
+        phdata->NGAGE_Renderer = 0;
+        return false;
+    }
+
     return true;
 }
 
+
 static void NGAGE_VideoQuit(SDL_VideoDevice *_this)
 {
+    SDL_VideoData* phdata = (SDL_VideoData*)_this->internal;
+
+    if (phdata->NGAGE_Renderer) {
+        delete phdata->NGAGE_Renderer;
+        phdata->NGAGE_Renderer = 0;
+    }
+
     return;
 }
 

@@ -127,7 +127,7 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
         break;
     }
 
-    return SDL_GetScancodeFromKey(keycode, NULL_);
+    return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)NULL_);
 }
 
 int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)

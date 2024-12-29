@@ -29,6 +29,7 @@
 #endif
 
 #include <w32std.h>
+#include <NRenderer.h>
 
 typedef struct SDL_VideoData
 {
@@ -36,6 +37,7 @@ typedef struct SDL_VideoData
     RWsSession NGAGE_WsSession;
     TRequestStatus NGAGE_WsEventStatus;
     TWsEvent NGAGE_WsEvent;
+    CNRenderer *NGAGE_Renderer;
 
     TBool NGAGE_IsWindowFocused; // Yet unused.
 
