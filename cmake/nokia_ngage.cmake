@@ -11,6 +11,7 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/camera/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/core/*.c"
   "${SDL3_SOURCE_DIR}/src/core/ngage/*.c"
+  "${SDL3_SOURCE_DIR}/src/core/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/cpuinfo/*.c"
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
@@ -45,12 +46,14 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
   "${SDL3_SOURCE_DIR}/src/thread/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/*.c"
+  "${SDL3_SOURCE_DIR}/src/time/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/unix/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/timer/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/tray/*.c"
   "${SDL3_SOURCE_DIR}/src/tray/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
+  "${SDL3_SOURCE_DIR}/src/video/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c")
 
 add_library(${PROJECT_NAME} STATIC ${SDL3_sources})
@@ -73,13 +76,3 @@ set(SDL3_libs
   ${EPOC_LIB}/egcc.lib
   ${EPOC_LIB}/estlib.lib
   ${EPOC_LIB}/euser.lib)
-
-#DELETE ME LATER
-set(UID1 0x1000007a) # KDynamicLibraryUidValue, e32uid.h
-set(UID2 0x1000008d)
-set(UID3 0x10005D73) # SDL.dll UID
-
-build_dll(${PROJECT_NAME} dll ${UID1} ${UID2} ${UID3} "${SDL3_libs}")
-
-add_dependencies(${PROJECT_NAME}.dll ${PROJECT_NAME})
-#DELETE ME LATER
