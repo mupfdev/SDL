@@ -29,8 +29,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define SDL_AUDIO_DISABLED    1
+#define SDL_CAMERA_DISABLED   1
+#define SDL_HAPTIC_DISABLED   1
+#define SDL_JOYSTICK_DISABLED 1
+#define SDL_SENSOR_DISABLED   1
+
 #define SDL_FSOPS_POSIX        1
-#define SDL_HAPTIC_DISABLED    1
 #define SDL_MAIN_NEEDED        1
 #define SDL_MAIN_USE_CALLBACKS 1
 #define SDL_THREAD_NGAGE       1
