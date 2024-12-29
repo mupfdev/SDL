@@ -19,7 +19,6 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include <unistd.h>
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -76,14 +75,4 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         break;
     }
     return SDL_strdup(folder_path);
-}
-
-char *SDL_SYS_GetCurrentDirectory(void)
-{
-    char current_dir[256];
-    if (getcwd(current_dir, sizeof(current_dir)) != NULL) {
-        return SDL_strdup(current_dir);
-    } else {
-        return SDL_strdup("E:\\");
-    }
 }
