@@ -49,7 +49,7 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/tray/*.c"
   "${SDL3_SOURCE_DIR}/src/tray/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
-  "${SDL3_SOURCE_DIR}/src/video/offscreen/*.c"
+  "${SDL3_SOURCE_DIR}/src/video/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c")
 
 add_library(${PROJECT_NAME} STATIC ${SDL3_sources})
