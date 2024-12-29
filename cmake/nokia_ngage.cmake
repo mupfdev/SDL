@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 enable_language(CXX)
 
+set(GCC_MODULE_COMN_DEFS -D__SYMBIAN32__ -D__GCC32__ -D__EPOC32__ -D__MARM__ -D__MARM_ARMI__)
+set(GCC_MODULE_MODE_DEFS -DNDEBUG -D_UNICODE)
+set(GCC_MODULE_DEFS ${GCC_MODULE_COMN_DEFS} ${GCC_MODULE_MODE_DEFS})
+
 file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/*.c"
   "${SDL3_SOURCE_DIR}/src/atomic/*.c"
@@ -31,6 +35,7 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/locale/*.c"
   "${SDL3_SOURCE_DIR}/src/locale/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/main/*.c"
+  "${SDL3_SOURCE_DIR}/src/main/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
   "${SDL3_SOURCE_DIR}/src/misc/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/power/*.c"
@@ -53,7 +58,7 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/tray/*.c"
   "${SDL3_SOURCE_DIR}/src/tray/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
-  "${SDL3_SOURCE_DIR}/src/video/ngage/*.cpp"
+  "${SDL3_SOURCE_DIR}/src/video/offscreen/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c")
 
 add_library(${PROJECT_NAME} STATIC ${SDL3_sources})
@@ -68,11 +73,20 @@ target_include_directories(
 
 target_compile_definitions(
   ${PROJECT_NAME}
-  PRIVATE
-  __GCC32__)
+  PUBLIC
+  SDL_STATIC_LIB
+  ${GCC_MODULE_DEFS})
 
-set(SDL3_libs
-  ${EPOC_PLATFORM}/gcc/lib/gcc-lib/arm-epoc-pe/2.9-psion-98r2/libgcc.a
-  ${EPOC_LIB}/egcc.lib
-  ${EPOC_LIB}/estlib.lib
-  ${EPOC_LIB}/euser.lib)
+#set(SDL3_libs
+#  ${EPOC_PLATFORM}/gcc/lib/gcc-lib/arm-epoc-pe/2.9-psion-98r2/libgcc.a
+#  ${EPOC_LIB}/egcc.lib
+#  ${EPOC_LIB}/estlib.lib
+#  ${EPOC_LIB}/euser.lib)
+
+#DELETE ME LATER
+#set(UID1 0x1000007a) # KDynamicLibraryUidValue, e32uid.h
+#set(UID2 0x1000008d)
+#set(UID3 0x10005D73) # SDL.dll UID
+#build_dll(${PROJECT_NAME} dll ${UID1} ${UID2} ${UID3} "${SDL3_libs}")
+#add_dependencies(${PROJECT_NAME}.dll ${PROJECT_NAME})
+#DELETE ME LATER
