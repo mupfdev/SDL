@@ -34,7 +34,7 @@
  * Symbian NULL or the standard NULL.
  */
 #ifndef NULL_
-#define NULL_ NULL
+#define NULL_ ((void*)0)
 #endif
 
 #define SDL_AUDIO_DISABLED    1
