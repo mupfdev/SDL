@@ -62,6 +62,11 @@ double __floatundidf(uint64_t a)
     return (double)a;
 }
 
+double __floatunsidf(uint32_t a)
+{
+    return (double)a;
+}
+
 float __floatunsisf(uint32_t a)
 {
     return (float)a;
