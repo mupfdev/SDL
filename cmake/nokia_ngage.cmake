@@ -37,6 +37,7 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/storage/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+  "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
   "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
   "${SDL3_SOURCE_DIR}/src/thread/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/*.c"
