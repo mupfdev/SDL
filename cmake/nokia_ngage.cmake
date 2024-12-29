@@ -11,7 +11,6 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/camera/dummy/*.c"
   "${SDL3_SOURCE_DIR}/src/core/*.c"
   "${SDL3_SOURCE_DIR}/src/core/ngage/*.c"
-  "${SDL3_SOURCE_DIR}/src/core/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/cpuinfo/*.c"
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
@@ -63,13 +62,15 @@ target_compile_definitions(
 set(SDL3_libs
   ${EPOC_PLATFORM}/gcc/lib/gcc-lib/arm-epoc-pe/2.9-psion-98r2/libgcc.a
   ${EPOC_LIB}/egcc.lib
-  ${EPOC_LIB}/euser.lib
-  ${EPOC_LIB}/estlib.lib)
+  ${EPOC_LIB}/estlib.lib
+  ${EPOC_LIB}/euser.lib)
 
-set(UID1 0x10000079) # KDynamicLibraryUidValue, e32uid.h
-set(UID2 0x100039ce) # KAppUidValue16, apadef.h
+#DELETE ME LATER
+set(UID1 0x1000007a) # KDynamicLibraryUidValue, e32uid.h
+set(UID2 0x1000008d)
 set(UID3 0x10005D73) # SDL.dll UID
 
 build_dll(${PROJECT_NAME} dll ${UID1} ${UID2} ${UID3} "${SDL3_libs}")
 
 add_dependencies(${PROJECT_NAME}.dll ${PROJECT_NAME})
+#DELETE ME LATER
