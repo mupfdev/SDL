@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef // SDL_VIDEO_DRIVER_NGAGE
+#ifdef SDL_VIDEO_DRIVER_NGAGE
 
 #ifndef SDL_ngageevents_cs_h_
 #define SDL_ngageevents_c_h_

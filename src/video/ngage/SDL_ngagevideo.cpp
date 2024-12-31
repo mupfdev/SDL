@@ -60,11 +60,11 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     device->VideoInit = NGAGE_VideoInit;
     device->VideoQuit = NGAGE_VideoQuit;
 
-    //device->CreateWindowFramebuffer = NGAGE_CreateWindowFramebuffer;
-    //device->UpdateWindowFramebuffer = NGAGE_UpdateWindowFramebuffer;
-    //device->DestroyWindowFramebuffer = NGAGE_DestroyWindowFramebuffer;
+    device->CreateWindowFramebuffer = NGAGE_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = NGAGE_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = NGAGE_DestroyWindowFramebuffer;
 
-    //device->PumpEvents = NGAGE_PumpEvents;
+    device->PumpEvents = NGAGE_PumpEvents;
 
     //device->StartTextInput
     //device->StopTextInput
