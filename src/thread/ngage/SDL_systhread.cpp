@@ -26,8 +26,10 @@
 #include <e32std.h>
 
 extern "C" {
+
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
+
 };
 
 static int object_count;
@@ -43,7 +45,7 @@ static TInt NewThread(const TDesC& aName, TAny* aPtr1, TAny* aPtr2)
     TInt result = ((RThread*)(aPtr1))->Create(aName,
         RunThread,
         KDefaultStackSize,
-        NULL,
+        0,
         aPtr2);
     return result;
 }
@@ -57,8 +59,9 @@ int CreateUnique(TInt (*aFunc)(const TDesC& aName, TAny*, TAny*), TAny* aPtr1, T
         object_count++;
         name.Format(_L("SDL_%x"), object_count);
         status = aFunc(name, aPtr1, aPtr2);
-    }
+   }
     while(status == KErrAlreadyExists);
+
     return status;
 }
 
@@ -76,7 +79,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread, SDL_FunctionPointer pfnBeginThread
     if (status != KErrNone)
     {
         delete(((RThread*)(thread->handle)));
-        thread->handle = NULL;
+        thread->handle = 0;
         SDL_SetError("Not enough resources to create thread");
         return 1;
     }
