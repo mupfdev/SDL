@@ -20,13 +20,17 @@
 */
 #include "SDL_internal.h"
 
+#ifdef SDL_VIDEO_DRIVER_NGAGE
+
 #ifndef SDL_ngageframebuffer_c_h_
 #define SDL_ngageframebuffer_c_h_
 
 #include "../SDL_sysvideo.h"
 
-extern bool SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
-extern bool SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
-extern void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
+extern bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern void NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_ngageframebuffer_c_h_
+
+#endif // SDL_VIDEO_DRIVER_NGAGE

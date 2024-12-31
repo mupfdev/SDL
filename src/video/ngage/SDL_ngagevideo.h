@@ -18,29 +18,58 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
+
+#ifdef SDL_VIDEO_DRIVER_NGAGE
 
 #ifndef _SDL_ngagevideo_h
 #define _SDL_ngagevideo_h
-
-#include "SDL_internal.h"
 
 #ifdef NULL
 #undef NULL
 #endif
 
-#include <w32std.h>
 #include <NRenderer.h>
+#include <coecntrl.h>
+#include <w32std.h>
+
+class CRenderer: public CCoeControl, public MDirectScreenAccess
+{
+public:
+    void ConstructL(const TDesC& aPath);
+
+    ~CRenderer();
+
+    // These functions are used when the applications gets or loses focus.
+    void StartDirectScreenAccess(void);
+    void StopDirectScreenAccess(void);
+
+    void Render(const SDL_Rect *&rects, int &numrects);
+
+    void Restart  (RDirectScreenAccess::TTerminationReasons aReason);
+    void AbortNow (RDirectScreenAccess::TTerminationReasons aReason);
+
+private:
+    // Direct screen access.
+    CDirectScreenAccess* iDirectScreen;
+    CFbsBitGc *iScreenGc;
+
+    // BackBuffer.
+    CNRenderer *iRenderer;
+};
 
 typedef struct SDL_VideoData
 {
-    // Epoc window server info
     RWsSession NGAGE_WsSession;
     TRequestStatus NGAGE_WsEventStatus;
     TWsEvent NGAGE_WsEvent;
-    CNRenderer *NGAGE_Renderer;
 
-    TBool NGAGE_IsWindowFocused; // Yet unused.
+    CRenderer* NGAGE_Renderer;
+
+    TBool NGAGE_IsWindowFocused;
 
 } SDL_VideoData;
 
 #endif // _SDL_ngagevideo_h
+
+#endif // SDL_VIDEO_DRIVER_NGAGE

@@ -20,22 +20,34 @@
 */
 #include "SDL_internal.h"
 
-#include "../../SDL_properties_c.h"
-#include "../SDL_sysvideo.h"
+#ifdef SDL_VIDEO_DRIVER_NGAGE
+
 #include "SDL_ngageframebuffer_c.h"
 #include "SDL_ngagevideo.h"
 
-bool SDL_NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+#define NGAGE_SURFACE "SDL.internal.window.surface"
+
+bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     return true;
 }
 
-bool SDL_NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
+    SDL_VideoData *phdata = (SDL_VideoData *)_this->internal;
+
+    if (!phdata->NGAGE_Renderer) {
+        return false;
+    }
+
+    phdata->NGAGE_Renderer->Render(rects, numrects);
+
     return true;
 }
 
-void SDL_NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return;
 }
+
+#endif // SDL_VIDEO_DRIVER_NGAGE

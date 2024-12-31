@@ -18,13 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
+
+#ifdef // SDL_VIDEO_DRIVER_NGAGE
 
 #ifndef SDL_ngageevents_cs_h_
 #define SDL_ngageevents_c_h_
 
-#include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 extern void NGAGE_PumpEvents(SDL_VideoDevice *_this);
 
 #endif // SDL_ngageevents_c_h_
+
+#endif // SDL_VIDEO_DRIVER_NGAGE

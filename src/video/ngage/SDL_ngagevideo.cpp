@@ -20,29 +20,20 @@
 */
 #include "SDL_internal.h"
 
-#ifdef NULL
-#undef NULL
-#endif
+#ifdef SDL_VIDEO_DRIVER_NGAGE
 
-#include <e32def.h>
-#include <NRenderer.h>
-#include "../SDL_sysvideo.h"
+#include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 #include "SDL_ngageframebuffer_c.h"
-#include "SDL_ngagevideo.h"
+#include "../SDL_sysvideo.h"
 
 #define NGAGE_VIDEO_DRIVER_NAME "N-Gage"
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device);
 static bool NGAGE_VideoInit(SDL_VideoDevice *_this);
 static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
-static bool NGAGE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-static bool NGAGE_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
-static bool NGAGE_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
-static bool NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
-static void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-static SDL_VideoDevice *NGAGE_CreateDevice(void)
+static SDL_VideoDevice* NGAGE_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *phdata;
@@ -64,21 +55,27 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
 
     device->internal = phdata;
 
+    device->name = "Nokia N-Gage";
+
     device->VideoInit = NGAGE_VideoInit;
     device->VideoQuit = NGAGE_VideoQuit;
 
-    device->GetDisplayModes = NGAGE_GetDisplayModes;
-    device->SetDisplayMode = NGAGE_SetDisplayMode;
-    device->GetDisplayBounds = NGAGE_GetDisplayBounds;
+    //device->CreateWindowFramebuffer = NGAGE_CreateWindowFramebuffer;
+    //device->UpdateWindowFramebuffer = NGAGE_UpdateWindowFramebuffer;
+    //device->DestroyWindowFramebuffer = NGAGE_DestroyWindowFramebuffer;
 
-    device->CreateSDLWindow = NGAGE_CreateWindow;
-    device->DestroyWindow = NGAGE_DestroyWindow;
+    //device->PumpEvents = NGAGE_PumpEvents;
 
-    device->PumpEvents = NGAGE_PumpEvents;
+    //device->StartTextInput
+    //device->StopTextInput
+    //device->UpdateTextInputArea
+    //device->ClearComposition
 
-    device->CreateWindowFramebuffer = SDL_NGAGE_CreateWindowFramebuffer;
-    device->UpdateWindowFramebuffer = SDL_NGAGE_UpdateWindowFramebuffer;
-    device->DestroyWindowFramebuffer = SDL_NGAGE_DestroyWindowFramebuffer;
+    //device->HasScreenKeyboardSupport
+    //device->ShowScreenKeyboard
+    //device->HideScreenKeyboard
+    //device->SetTextInputProperties
+    //device->IsScreenKeyboardShown
 
     device->free = NGAGE_DeleteDevice;
 
@@ -87,61 +84,144 @@ static SDL_VideoDevice *NGAGE_CreateDevice(void)
     return device;
 }
 
-VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))NULL_ };
+VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))((void*)0) /* Standard NULL. */ };
 
-static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
+static void NGAGE_DeleteDevice(SDL_VideoDevice *_this)
 {
-    return;
+    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
+
+    if (phdata->NGAGE_Renderer) {
+        delete phdata->NGAGE_Renderer;
+    }
+
+    SDL_free(_this->internal);
+    SDL_free(_this);
 }
 
 static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData* phdata = (SDL_VideoData*)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
 
-    phdata->NGAGE_Renderer = CNRenderer::NewL();
-    if (!phdata->NGAGE_Renderer) {
-        delete phdata->NGAGE_Renderer;
-        phdata->NGAGE_Renderer = 0;
-        return false;
-    }
+    TFileName aPath = _L("demo");
+    TParse aParser;
+    aParser.Set(aPath, NULL, NULL);
+
+    TPtrC aPathLessName = aParser.DriveAndPath();
+
+    // Create renderer.
+    phdata->NGAGE_Renderer = new (ELeave) CRenderer;
+
+    // Create fullscreen window.
+    phdata->NGAGE_Renderer->ConstructL(aPathLessName);
+
+    // Activate window.
+    phdata->NGAGE_Renderer->ActivateL();
 
     return true;
 }
-
 
 static void NGAGE_VideoQuit(SDL_VideoDevice *_this)
 {
-    SDL_VideoData* phdata = (SDL_VideoData*)_this->internal;
+    return;
+}
 
-    if (phdata->NGAGE_Renderer) {
-        delete phdata->NGAGE_Renderer;
-        phdata->NGAGE_Renderer = 0;
+CRenderer::~CRenderer()
+{
+    // Release Direct screen access.
+    if (iDirectScreen)
+    {
+        iDirectScreen->Cancel();
+        delete iDirectScreen;
     }
 
-    return;
+    // Delete Renderer.
+    delete iRenderer;
 }
 
-static bool NGAGE_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+void CRenderer::ConstructL(const TDesC& aPath)
 {
-    return false;
+    // Create window.
+    CreateWindowL();
+
+    // Set full screen size.
+    SetExtentToWholeScreen();
+
+    // Create Back buffer.
+    iRenderer = CNRenderer::NewL();
+
+    // Set 12 bit mode.
+    Window().SetRequiredDisplayMode(EColor4K);
+
+    // Create Direct screen access but do not activate it:
+    // Direct screen access has to be active if container becomes focus.
+    iDirectScreen = CDirectScreenAccess::NewL(
+        CCoeControl::iCoeEnv->WsSession(),
+        *(CCoeControl::iCoeEnv->ScreenDevice()),
+        Window(),
+        *this);
 }
 
-static bool NGAGE_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+void CRenderer::StartDirectScreenAccess(void)
 {
-    return false;
+	if (!iDirectScreen->IsActive())
+	{
+		// Start it.
+		TRAPD (err, iDirectScreen->StartL());
+		if (KErrNone != err) {
+            return;
+        }
+
+        // Set auto update.
+		iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
+
+        // Save graphic context.
+		iScreenGc = iDirectScreen->Gc();
+
+        // Set cliping area for context.
+        // If you need screen rect use DirectScreen->DrawingRegion->BoundingRect();
+		iScreenGc->SetClippingRegion(iDirectScreen->DrawingRegion());
+	}
 }
 
-static bool NGAGE_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+void CRenderer::StopDirectScreenAccess(void)
 {
-    return false;
+    if (iDirectScreen->IsActive()) {
+        iDirectScreen->Cancel();
+    }
+
+    iScreenGc = NULL;
 }
 
-static bool NGAGE_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+void CRenderer::Restart  (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 {
-    return true;
+    StartDirectScreenAccess();
 }
 
-static void NGAGE_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
+void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 {
-    return;
+	StopDirectScreenAccess();
 }
+
+void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
+{
+	if (iScreenGc)
+	{
+        iRenderer->Clear(0x202060);
+        iRenderer->ClearStatisticCounters();
+
+        iRenderer->BeginScene();
+
+        for (int i = 0; i < numrects; ++i) {
+            const SDL_Rect* rect = &rects[i];
+
+            TPoint top_left(rect->x, rect->y);
+            TPoint bottom_right(rect->x + rect->w, rect->y + rect->h);
+            iRenderer->Gc()->DrawRect(TRect(top_left, bottom_right));
+        }
+
+        iRenderer->EndScene();
+        iRenderer->Flip(iDirectScreen);
+    }
+}
+
+#endif // SDL_VIDEO_DRIVER_NGAGE

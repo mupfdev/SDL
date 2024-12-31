@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#ifdef SDL_VIDEO_DRIVER_NGAGE
+
 #include "SDL_ngagevideo.h"
 
 #include <w32std.h>
@@ -35,7 +37,8 @@ extern "C" {
 }
 #endif
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
+void DisableKeyBlocking(SDL_VideoDevice* _this);
+int  HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
 
 void NGAGE_PumpEvents(SDL_VideoDevice *_this)
 {
@@ -127,7 +130,16 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
         break;
     }
 
-    return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)NULL_);
+    return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)((void*)0) /* Standard NULL. */);
+}
+
+void DisableKeyBlocking(SDL_VideoDevice *_this)
+{
+    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
+    TRawEvent      event;
+
+    event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
+    phdata->NGAGE_WsSession.SimulateRawEvent(event);
 }
 
 int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
@@ -144,26 +156,13 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
         break;
     case EEventFocusGained: // SDL window got focus.
         phdata->NGAGE_IsWindowFocused = ETrue;
-        /* Draw window background and screen buffer */
-        // DisableKeyBlocking(SDL_VideoDevice *_this);
-        // RedrawWindowL(SDL_VideoDevice *_this);
+        DisableKeyBlocking(_this);
+        phdata->NGAGE_Renderer->StartDirectScreenAccess();
         break;
     case EEventFocusLost: // SDL window lost focus.
     {
         phdata->NGAGE_IsWindowFocused = EFalse;
-        // RWsSession s;
-        // s.Connect();
-        // RWindowGroup g(s);
-        // g.Construct(TUint32(&g), EFalse);
-        // g.EnableReceiptOfFocus(EFalse);
-        // RWindow w(s);
-        // w.Construct(g, TUint32(&w));
-        // w.SetExtent(TPoint(0, 0), phdata->NGAGE_WsWindow.Size());
-        // w.SetOrdinalPosition(0);
-        // w.Activate();
-        // w.Close();
-        // g.Close();
-        // s.Close();
+        phdata->NGAGE_Renderer->StopDirectScreenAccess();
         break;
     }
     case EEventModifiersChanged:
@@ -173,3 +172,5 @@ int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
     }
     return posted;
 }
+
+#endif // SDL_VIDEO_DRIVER_NGAGE
