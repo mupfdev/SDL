@@ -29,14 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* The Symbian API sometimes redefines NULL.
- * Depending on our requirements, we can either use the
- * Symbian NULL or the standard NULL.
- */
-#ifndef NULL_
-#define NULL_ ((void*)0)
-#endif
-
 #define SDL_AUDIO_DISABLED    1
 #define SDL_CAMERA_DISABLED   1
 #define SDL_HAPTIC_DISABLED   1
