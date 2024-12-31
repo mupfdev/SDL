@@ -206,10 +206,10 @@ void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
 {
 	if (iScreenGc)
 	{
-        iRenderer->Clear(0x202060);
-        iRenderer->ClearStatisticCounters();
-
         iRenderer->BeginScene();
+
+        iRenderer->Clear(0x000000);
+        iRenderer->ClearStatisticCounters();
 
         for (int i = 0; i < numrects; ++i) {
             const SDL_Rect* rect = &rects[i];
