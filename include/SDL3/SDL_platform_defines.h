@@ -317,7 +317,7 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(__NGAGE__)
 
 /**
  * A preprocessor macro that is only defined if compiling for Windows.
@@ -483,7 +483,6 @@
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_PLATFORM_NGAGE 1
-#undef SDL_PLATFORM_WINDOWS
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
