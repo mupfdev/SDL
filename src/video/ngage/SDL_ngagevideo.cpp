@@ -25,13 +25,22 @@
 #include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 #include "SDL_ngageframebuffer_c.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../SDL_sysvideo.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #define NGAGE_VIDEO_DRIVER_NAME "N-Gage"
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device);
-static bool NGAGE_VideoInit(SDL_VideoDevice *_this);
-static void NGAGE_VideoQuit(SDL_VideoDevice *_this);
+static bool NGAGE_VideoInit(SDL_VideoDevice *device);
+static void NGAGE_VideoQuit(SDL_VideoDevice *device);
 
 static SDL_VideoDevice* NGAGE_CreateDevice(void)
 {
@@ -86,27 +95,42 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
 
 VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))((void*)0) /* Standard NULL. */ };
 
-static void NGAGE_DeleteDevice(SDL_VideoDevice *_this)
+static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
 
     if (phdata && phdata->NGAGE_Renderer) {
         delete phdata->NGAGE_Renderer;
     }
 
-    SDL_free(_this->internal);
-    SDL_free(_this);
+    SDL_free(device->internal);
+    SDL_free(device);
 }
 
-static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
+static bool NGAGE_VideoInit(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
 
     TFileName aPath = _L("demo");
     TParse aParser;
     aParser.Set(aPath, NULL, NULL);
 
     TPtrC aPathLessName = aParser.DriveAndPath();
+
+    SDL_zero(phdata->mode);
+    SDL_zero(phdata->display);
+
+    phdata->mode.w = 176;
+    phdata->mode.h = 208;
+    phdata->mode.refresh_rate = 60.0f;
+    phdata->mode.format = SDL_PIXELFORMAT_XRGB4444;
+
+    phdata->display.name = "N-Gage";
+    phdata->display.desktop_mode = phdata->mode;
+
+    if (SDL_AddVideoDisplay(&phdata->display, false) == 0) {
+        return false;
+    }
 
     // Create renderer.
     phdata->NGAGE_Renderer = new (ELeave) CRenderer;
@@ -116,13 +140,16 @@ static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
     phdata->NGAGE_Renderer->ConstructL(aPathLessName);
     CleanupStack::Pop();
 
+	// Disable system menu if fullscreen only.
+	phdata->NGAGE_Renderer->MakeVisible(EFalse);
+
     // Activate window.
     phdata->NGAGE_Renderer->ActivateL();
 
     return true;
 }
 
-static void NGAGE_VideoQuit(SDL_VideoDevice *_this)
+static void NGAGE_VideoQuit(SDL_VideoDevice *device)
 {
     return;
 }
@@ -209,7 +236,7 @@ void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 
 void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
 {
-	if (iScreenGc && iRenderer && iRenderer->Gc()) {
+	if (iScreenGc && iRenderer) {
         iRenderer->BeginScene();
 
         iRenderer->Clear(0x000000);
@@ -220,7 +247,7 @@ void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
 
             TPoint top_left(rect->x, rect->y);
             TPoint bottom_right(rect->x + rect->w, rect->y + rect->h);
-            iRenderer->Gc()->DrawRect(TRect(top_left, bottom_right));
+            iScreenGc->DrawRect(TRect(top_left, bottom_right));
         }
 
         iRenderer->EndScene();

@@ -32,6 +32,7 @@
 #include <NRenderer.h>
 #include <coecntrl.h>
 #include <w32std.h>
+#include "../SDL_sysvideo.h"
 
 class CRenderer: public CCoeControl, public MDirectScreenAccess
 {
@@ -67,6 +68,9 @@ typedef struct SDL_VideoData
     CRenderer* NGAGE_Renderer;
 
     TBool NGAGE_IsWindowFocused;
+
+    SDL_DisplayMode mode;
+    SDL_VideoDisplay display;
 
 } SDL_VideoData;
 

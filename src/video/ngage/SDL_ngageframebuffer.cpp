@@ -27,14 +27,14 @@
 
 #define NGAGE_SURFACE "SDL.internal.window.surface"
 
-bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     return true;
 }
 
-bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
 
     if (!phdata->NGAGE_Renderer) {
         return false;
@@ -45,7 +45,7 @@ bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, c
     return true;
 }
 
-void NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
+void NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window)
 {
     return;
 }

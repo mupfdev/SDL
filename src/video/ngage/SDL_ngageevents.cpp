@@ -37,24 +37,24 @@ extern "C" {
 }
 #endif
 
-void DisableKeyBlocking(SDL_VideoDevice* _this);
-int  HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent);
+void DisableKeyBlocking(SDL_VideoDevice* device);
+int  HandleWsEvent(SDL_VideoDevice *device, const TWsEvent &aWsEvent);
 
-void NGAGE_PumpEvents(SDL_VideoDevice *_this)
+void NGAGE_PumpEvents(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
 
     while (phdata->NGAGE_WsEventStatus != KRequestPending) {
         phdata->NGAGE_WsSession.GetEvent(phdata->NGAGE_WsEvent);
 
-        HandleWsEvent(_this, phdata->NGAGE_WsEvent);
+        HandleWsEvent(device, phdata->NGAGE_WsEvent);
 
         phdata->NGAGE_WsEventStatus = KRequestPending;
         phdata->NGAGE_WsSession.EventReady(&phdata->NGAGE_WsEventStatus);
     }
 }
 
-static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
+static SDL_Scancode ConvertScancode(SDL_VideoDevice *device, int key)
 {
     SDL_Keycode keycode;
 
@@ -133,30 +133,30 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *_this, int key)
     return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)((void*)0) /* Standard NULL. */);
 }
 
-void DisableKeyBlocking(SDL_VideoDevice *_this)
+void DisableKeyBlocking(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
     TRawEvent      event;
 
     event.Set((TRawEvent::TType) /*EDisableKeyBlock*/ 51);
     phdata->NGAGE_WsSession.SimulateRawEvent(event);
 }
 
-int HandleWsEvent(SDL_VideoDevice *_this, const TWsEvent &aWsEvent)
+int HandleWsEvent(SDL_VideoDevice *device, const TWsEvent &aWsEvent)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
     int posted = 0;
 
     switch (aWsEvent.Type()) {
     case EEventKeyDown: /* Key events */
-        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, ConvertScancode(_this, aWsEvent.Key()->iScanCode), true);
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, ConvertScancode(device, aWsEvent.Key()->iScanCode), true);
         break;
     case EEventKeyUp: /* Key events */
-        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, ConvertScancode(_this, aWsEvent.Key()->iScanCode), false);
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, ConvertScancode(device, aWsEvent.Key()->iScanCode), false);
         break;
     case EEventFocusGained: // SDL window got focus.
         phdata->NGAGE_IsWindowFocused = ETrue;
-        DisableKeyBlocking(_this);
+        DisableKeyBlocking(device);
         phdata->NGAGE_Renderer->StartDirectScreenAccess();
         break;
     case EEventFocusLost: // SDL window lost focus.
