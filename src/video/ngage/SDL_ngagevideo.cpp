@@ -90,7 +90,7 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *_this)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)_this->internal;
 
-    if (phdata->NGAGE_Renderer) {
+    if (phdata && phdata->NGAGE_Renderer) {
         delete phdata->NGAGE_Renderer;
     }
 
@@ -112,7 +112,9 @@ static bool NGAGE_VideoInit(SDL_VideoDevice *_this)
     phdata->NGAGE_Renderer = new (ELeave) CRenderer;
 
     // Create fullscreen window.
+    CleanupStack::PushL(phdata->NGAGE_Renderer);
     phdata->NGAGE_Renderer->ConstructL(aPathLessName);
+    CleanupStack::Pop();
 
     // Activate window.
     phdata->NGAGE_Renderer->ActivateL();
@@ -147,24 +149,27 @@ void CRenderer::ConstructL(const TDesC& aPath)
     SetExtentToWholeScreen();
 
     // Create Back buffer.
+    CleanupStack::PushL(iRenderer);
     iRenderer = CNRenderer::NewL();
+    CleanupStack::Pop();
 
     // Set 12 bit mode.
     Window().SetRequiredDisplayMode(EColor4K);
 
     // Create Direct screen access but do not activate it:
     // Direct screen access has to be active if container becomes focus.
+    CleanupStack::PushL(iDirectScreen);
     iDirectScreen = CDirectScreenAccess::NewL(
-        CCoeControl::iCoeEnv->WsSession(),
-        *(CCoeControl::iCoeEnv->ScreenDevice()),
+        iCoeEnv->WsSession(),
+        *(iCoeEnv->ScreenDevice()),
         Window(),
         *this);
+    CleanupStack::Pop();
 }
 
 void CRenderer::StartDirectScreenAccess(void)
 {
-	if (!iDirectScreen->IsActive())
-	{
+    if (iDirectScreen && !iDirectScreen->IsActive()) {
 		// Start it.
 		TRAPD (err, iDirectScreen->StartL());
 		if (KErrNone != err) {
@@ -185,7 +190,7 @@ void CRenderer::StartDirectScreenAccess(void)
 
 void CRenderer::StopDirectScreenAccess(void)
 {
-    if (iDirectScreen->IsActive()) {
+    if (iDirectScreen && iDirectScreen->IsActive()) {
         iDirectScreen->Cancel();
     }
 
@@ -204,8 +209,7 @@ void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 
 void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
 {
-	if (iScreenGc)
-	{
+	if (iScreenGc && iRenderer && iRenderer->Gc()) {
         iRenderer->BeginScene();
 
         iRenderer->Clear(0x000000);
