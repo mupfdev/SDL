@@ -72,9 +72,6 @@
             /* Private platforms may have their own ideas about entry points. */
             #include "SDL_main_impl_private.h"
 
-        #elif defined(SDL_PLATFORM_NGAGE)
-            #define main __gccmain
-
         #elif defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */
@@ -134,7 +131,7 @@
 
             /* end of SDL_PLATFORM_WINDOWS impls */
 
-        #if defined(SDL_PLATFORM_PRIVATE_MAIN)
+        #if defined(SDL_PLATFORM_NGAGE)
             int __gccmain(int argc, char *argv[])
             {
                 return SDL_RunApp(argc, argv, SDL_main, NULL);
