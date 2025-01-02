@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -2429,7 +2429,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     data_device->drag_offer = NULL;
 }
 
-static void notifyFromMimes(struct wl_list *mimes) {
+static void notifyFromMimes(struct wl_list *mimes)
+{
     int nformats = 0;
     char **new_mime_types = NULL;
     if (mimes) {

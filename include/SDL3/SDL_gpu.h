@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -149,6 +149,29 @@
  * [here](https://github.com/TheSpydog/SDL_gpu_examples)
  * .
  *
+ * ## Performance considerations
+ *
+ * Here are some basic tips for maximizing your rendering performance.
+ *
+ * - Beginning a new render pass is relatively expensive. Use as few render
+ *   passes as you can.
+ * - Minimize the amount of state changes. For example, binding a pipeline is
+ *   relatively cheap, but doing it hundreds of times when you don't need to
+ *   will slow the performance significantly.
+ * - Perform your data uploads as early as possible in the frame.
+ * - Don't churn resources. Creating and releasing resources is expensive.
+ *   It's better to create what you need up front and cache it.
+ * - Don't use uniform buffers for large amounts of data (more than a matrix
+ *   or so). Use a storage buffer instead.
+ * - Use cycling correctly. There is a detailed explanation of cycling further
+ *   below.
+ * - Use culling techniques to minimize pixel writes. The less writing the GPU
+ *   has to do the better. Culling can be a very advanced topic but even
+ *   simple culling techniques can boost performance significantly.
+ *
+ * In general try to remember the golden rule of performance: doing things is
+ * more expensive than not doing things. Don't Touch The Driver!
+ *
  * ## FAQ
  *
  * **Question: When are you adding more advanced features, like ray tracing or
@@ -173,6 +196,16 @@
  * textures, and buffers in SDL_GPUShaderCreateInfo. If possible use shader
  * reflection to extract the required information from the shader
  * automatically instead of manually filling in the struct's values.
+ *
+ * **Question: My application isn't performing very well. Is this the GPU
+ * API's fault?**
+ *
+ * Answer: No. Long answer: The GPU API is a relatively thin layer over the
+ * underlying graphics API. While it's possible that we have done something
+ * inefficiently, it's very unlikely especially if you are relatively
+ * inexperienced with GPU rendering. Please see the performance tips above and
+ * make sure you are following them. Additionally, tools like RenderDoc can be
+ * very helpful for diagnosing incorrect behavior and performance issues.
  *
  * ## System Requirements
  *
@@ -1386,8 +1419,10 @@ typedef struct SDL_GPUBufferRegion
  *
  * Note that the `first_vertex` and `first_instance` parameters are NOT
  * compatible with built-in vertex/instance ID variables in shaders (for
- * example, SV_VertexID). If your shader depends on these variables, the
- * correlating draw call parameter MUST be 0.
+ * example, SV_VertexID); GPU APIs and shader languages do not define these
+ * built-in variables consistently, so if your shader depends on them, the
+ * only way to keep behavior consistent and portable is to always pass 0 for
+ * the correlating parameter in the draw calls.
  *
  * \since This struct is available since SDL 3.1.3
  *
@@ -1406,8 +1441,10 @@ typedef struct SDL_GPUIndirectDrawCommand
  *
  * Note that the `first_vertex` and `first_instance` parameters are NOT
  * compatible with built-in vertex/instance ID variables in shaders (for
- * example, SV_VertexID). If your shader depends on these variables, the
- * correlating draw call parameter MUST be 0.
+ * example, SV_VertexID); GPU APIs and shader languages do not define these
+ * built-in variables consistently, so if your shader depends on them, the
+ * only way to keep behavior consistent and portable is to always pass 0 for
+ * the correlating parameter in the draw calls.
  *
  * \since This struct is available since SDL 3.1.3
  *
@@ -2992,8 +3029,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageBuffers(
  *
  * Note that the `first_vertex` and `first_instance` parameters are NOT
  * compatible with built-in vertex/instance ID variables in shaders (for
- * example, SV_VertexID). If your shader depends on these variables, the
- * correlating draw call parameter MUST be 0.
+ * example, SV_VertexID); GPU APIs and shader languages do not define these
+ * built-in variables consistently, so if your shader depends on them, the
+ * only way to keep behavior consistent and portable is to always pass 0 for
+ * the correlating parameter in the draw calls.
  *
  * \param render_pass a render pass handle.
  * \param num_indices the number of indices to draw per instance.
@@ -3020,8 +3059,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitives(
  *
  * Note that the `first_vertex` and `first_instance` parameters are NOT
  * compatible with built-in vertex/instance ID variables in shaders (for
- * example, SV_VertexID). If your shader depends on these variables, the
- * correlating draw call parameter MUST be 0.
+ * example, SV_VertexID); GPU APIs and shader languages do not define these
+ * built-in variables consistently, so if your shader depends on them, the
+ * only way to keep behavior consistent and portable is to always pass 0 for
+ * the correlating parameter in the draw calls.
  *
  * \param render_pass a render pass handle.
  * \param num_vertices the number of vertices to draw.

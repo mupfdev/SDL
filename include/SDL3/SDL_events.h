@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -920,8 +920,8 @@ typedef struct SDL_ClipboardEvent
     SDL_EventType type; /**< SDL_EVENT_CLIPBOARD_UPDATE */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    bool owner;       /**< are we owning the clipboard (internal update) */
-    Sint32 n_mime_types;     /**< number of mime types */
+    bool owner;         /**< are we owning the clipboard (internal update) */
+    Sint32 num_mime_types;   /**< number of mime types */
     const char **mime_types; /**< current mime types */
 } SDL_ClipboardEvent;
 

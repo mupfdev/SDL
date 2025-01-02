@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -162,7 +162,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
     DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        style |= WS_POPUP;
+        style |= WS_POPUP | WS_THICKFRAME;
     } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
@@ -269,7 +269,7 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
     /* borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
        expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
      */
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
+    if (!(window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(window)) {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         AdjustWindowRectEx(&rect, style, menu, 0);
 #else
@@ -687,7 +687,7 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
         int offset_x = 0, offset_y = 0;
 
         // Calculate the total offset from the parents
-        for (w = window->parent; w->parent; w = w->parent) {
+        for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
             offset_x += w->x;
             offset_y += w->y;
         }
@@ -725,15 +725,18 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 
 static void WIN_SetKeyboardFocus(SDL_Window *window)
 {
-    SDL_Window *topmost = window;
+    SDL_Window *toplevel = window;
 
     // Find the topmost parent
-    while (topmost->parent) {
-        topmost = topmost->parent;
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
     }
 
-    topmost->internal->keyboard_focus = window;
-    SDL_SetKeyboardFocus(window);
+    toplevel->internal->keyboard_focus = window;
+
+    if (!window->is_hiding && !window->is_destroying) {
+    	SDL_SetKeyboardFocus(window);
+    }
 }
 
 bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -765,6 +768,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         WIN_ConstrainPopup(window, false);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, FALSE, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
 
+        int gx, gy;
+        SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &gx, &gy);
+        SDL_Log("Create at: %i,%i (%i,%i)", gx, gy, x, y);
         hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
                               x, y, w, h, parent, NULL, SDL_Instance, NULL);
         if (!hwnd) {
@@ -1115,8 +1121,8 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (window == SDL_GetKeyboardFocus()) {
             SDL_Window *new_focus = window->parent;
 
-            // Find the highest level window that isn't being hidden or destroyed.
-            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+            // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
+            while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
                 new_focus = new_focus->parent;
             }
 

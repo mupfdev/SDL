@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1405,7 +1405,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             constrain_max_size = FALSE;
         }
 
-        if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
+        if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(data->window)) {
             size.top = 0;
             size.left = 0;
             size.bottom = h;
@@ -1449,6 +1449,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         returnCode = 0;
         break;
 #endif // WM_GETMINMAXINFO
+
+    case WM_WINDOWPOSCHANGING:
+
+        if (data->expected_resize) {
+            returnCode = 0;
+        }
+        break;
 
     case WM_WINDOWPOSCHANGED:
     {
@@ -1526,8 +1533,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // Update the position of any child windows
         for (win = data->window->first_child; win; win = win->next_sibling) {
-            // Don't update hidden child windows, their relative position doesn't change
-            if (!(win->flags & SDL_WINDOW_HIDDEN)) {
+            // Don't update hidden child popup windows, their relative position doesn't change
+            if (SDL_WINDOW_IS_POPUP(win) && !(win->flags & SDL_WINDOW_HIDDEN)) {
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
@@ -1984,7 +1991,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 RECT rect = { 0 };
 
-                if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                if (!(data->window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(data->window)) {
                     WIN_AdjustWindowRectForHWND(hwnd, &rect, prevDPI);
                 }
 
@@ -2001,7 +2008,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 rect.right = query_client_w_win;
                 rect.bottom = query_client_h_win;
 
-                if (!(data->window->flags & SDL_WINDOW_BORDERLESS)) {
+                if (!(data->window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(data->window)) {
                     WIN_AdjustWindowRectForHWND(hwnd, &rect, nextDPI);
                 }
 

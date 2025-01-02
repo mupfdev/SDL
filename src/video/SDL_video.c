@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // The high-level video driver subsystem
 
 #include "SDL_sysvideo.h"
+#include "SDL_clipboard_c.h"
 #include "SDL_egl_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_pixels_c.h"
@@ -526,7 +527,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     return 0;
 }
 
-static bool SDL_UninitializedVideo(void)
+bool SDL_UninitializedVideo(void)
 {
     return SDL_SetError("Video subsystem has not been initialized");
 }
@@ -1568,6 +1569,10 @@ void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int
         for (w = window->parent; w; w = w->parent) {
             rel_x += w->x;
             rel_y += w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 
@@ -1588,6 +1593,10 @@ void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int
         for (w = window->parent; w; w = w->parent) {
             abs_x -= w->x;
             abs_y -= w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 
@@ -4269,6 +4278,8 @@ void SDL_VideoQuit(void)
     SDL_assert(_this->num_displays == 0);
     SDL_free(_this->displays);
     _this->displays = NULL;
+
+    SDL_CancelClipboardData(0);
 
     if (_this->primary_selection_text) {
         SDL_free(_this->primary_selection_text);
