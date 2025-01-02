@@ -38,16 +38,23 @@ TInt E32Main()
 {
     /*  Get the clean-up stack */
     CTrapCleanup* cleanup = CTrapCleanup::New();
+    if (!cleanup) {
+        return KErrNoMemory;
+    }
 
     /* Arrange for multi-threaded operation */
-    SpawnPosixServerThread();
+    TInt err = SpawnPosixServerThread();
+    if (err != KErrNone) {
+        delete cleanup;
+        return err;
+    }
 
     /* Get args and environment */
     int    argc = 0;
     char** argv = 0;
     char** envp = 0;
 
-    __crt0(argc,argv,envp);
+    __crt0(argc, argv, envp);
 
     /* Start the application! */
 
@@ -55,7 +62,6 @@ TInt E32Main()
     _REENT;
 
     /* Set process and thread priority and name */
-
     RThread  currentThread;
     RProcess thisProcess;
     TParse   exeName;
@@ -87,6 +93,11 @@ TInt E32Main()
 
 cleanup:
     _cleanup();
+
+    if (newHeap) {
+        User::SwitchHeap(oldHeap);
+        newHeap->Close();
+    }
 
     CloseSTDLIB();
     delete cleanup;
