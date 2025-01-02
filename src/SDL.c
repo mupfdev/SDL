@@ -93,8 +93,8 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
 #if defined(SDL_PLATFORM_NGAGE)
-    extern void ngage_exit_app(int exitcode);
-    ngage_exit_app(exitcode);
+    extern void NGAGE_ExitApp(int exitcode);
+    NGAGE_ExitApp(exitcode);
 #elif defined(SDL_PLATFORM_WINDOWS)
     /* "if you do not know the state of all threads in your process, it is
        better to call TerminateProcess than ExitProcess"
