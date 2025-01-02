@@ -157,12 +157,12 @@ int HandleWsEvent(SDL_VideoDevice *device, const TWsEvent &aWsEvent)
     case EEventFocusGained: // SDL window got focus.
         phdata->NGAGE_IsWindowFocused = ETrue;
         DisableKeyBlocking(device);
-        phdata->NGAGE_Renderer->StartDirectScreenAccess();
+        phdata->NGAGE_Renderer->StartPeriodic();
         break;
     case EEventFocusLost: // SDL window lost focus.
     {
         phdata->NGAGE_IsWindowFocused = EFalse;
-        phdata->NGAGE_Renderer->StopDirectScreenAccess();
+        phdata->NGAGE_Renderer->StopPeriodic();
         break;
     }
     case EEventModifiersChanged:

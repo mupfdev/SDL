@@ -43,6 +43,15 @@ static void NGAGE_VideoQuit(SDL_VideoDevice *device);
 static bool NGAGE_GetDisplayBounds(SDL_VideoDevice* _this, SDL_VideoDisplay* display, SDL_Rect* rect);
 static bool NGAGE_GetDisplayModes(SDL_VideoDevice* _this, SDL_VideoDisplay* display);
 
+static const TUint KOneFPS = 1000000;
+static const TUint K10FPS = 93749;
+static const TUint K13FPS = 78124;
+static const TUint K16FPS = 62499;
+static const TUint K22FPS = 46874;
+static const TUint K32FPS = 31249;
+static const TUint K64FPS = 15624;
+static const TUint KMAXFPS = 1;
+
 static SDL_VideoDevice* NGAGE_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -101,12 +110,6 @@ VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
-
-    if (phdata && phdata->NGAGE_Renderer) {
-        delete phdata->NGAGE_Renderer;
-    }
-
     SDL_free(device->internal);
     SDL_free(device);
 }
@@ -114,12 +117,6 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 static bool NGAGE_VideoInit(SDL_VideoDevice *device)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
-
-    TFileName aPath = _L("demo");
-    TParse aParser;
-    aParser.Set(aPath, NULL, NULL);
-
-    TPtrC aPathLessName = aParser.DriveAndPath();
 
     SDL_zero(phdata->mode);
     SDL_zero(phdata->display);
@@ -136,25 +133,32 @@ static bool NGAGE_VideoInit(SDL_VideoDevice *device)
         return false;
     }
 
-    // Create renderer.
-    phdata->NGAGE_Renderer = new (ELeave) CRenderer;
+    phdata->NGAGE_Renderer = new CRenderer();
+    if (!phdata->NGAGE_Renderer) {
+        SDL_OutOfMemory();
+        return false;
+    }
 
-    // Create fullscreen window.
-    CleanupStack::PushL(phdata->NGAGE_Renderer);
-    phdata->NGAGE_Renderer->ConstructL(aPathLessName);
-    CleanupStack::Pop();
-
-	// Disable system menu if fullscreen only.
-	phdata->NGAGE_Renderer->MakeVisible(EFalse);
+     // Create fullscreen window.
+    phdata->NGAGE_Renderer->ConstructL();
 
     // Activate window.
     phdata->NGAGE_Renderer->ActivateL();
+
+    // Disable system menu in fullscreen mode.
+    phdata->NGAGE_Renderer->MakeVisible(EFalse);
 
     return true;
 }
 
 static void NGAGE_VideoQuit(SDL_VideoDevice *device)
 {
+    SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
+
+    if (phdata && phdata->NGAGE_Renderer) {
+        delete phdata->NGAGE_Renderer;
+    }
+
     return;
 }
 
@@ -192,39 +196,83 @@ static bool NGAGE_GetDisplayModes(SDL_VideoDevice* device, SDL_VideoDisplay* dis
 
 CRenderer::~CRenderer()
 {
-    if (iDirectScreen)
-    {
+    if (iCoeEnv) {
+        iCoeEnv->WsSession().Close();
+        delete iCoeEnv;
+    }
+
+    if (iTimer) {
+        iTimer->Cancel();
+        delete iTimer;
+    }
+
+    if (iDirectScreen) {
         iDirectScreen->Cancel();
         delete iDirectScreen;
+        iDirectScreen = 0;
     }
 
     delete iRenderer;
+    iRenderer = 0;
 }
 
-void CRenderer::ConstructL(const TDesC& aPath)
+void CRenderer::ConstructL()
 {
-    CreateWindowL();
-    SetExtentToWholeScreen();
+    iCoeEnv = new (ELeave) CCoeEnv();
+    if (!iCoeEnv) {
+        return;
+    }
 
-    CleanupStack::PushL(iRenderer);
-    iRenderer = CNRenderer::NewL();
-    CleanupStack::Pop();
+    iCoeEnv->CCoeEnv::ConstructL();
+
+    if (!iCoeEnv) {
+        User::Leave(KErrNotReady);
+    }
+
+    TRAPD(err1, CreateWindowL());
+    if (err1 != KErrNone) {
+        return;
+    }
+
+    TRAPD(err2, SetExtentToWholeScreen());
+    if (err2 != KErrNone) {
+        return;
+    }
+
+    TRAPD(err3, iRenderer = iRenderer->NewL());
+    if (err3 != KErrNone) {
+        return;
+    }
 
     // Set 12 bit mode.
     Window().SetRequiredDisplayMode(EColor4K);
 
     // Create Direct screen access but do not activate it:
     // Direct screen access has to be active if container becomes focus.
-    CleanupStack::PushL(iDirectScreen);
-    iDirectScreen = CDirectScreenAccess::NewL(
+    TRAPD(err4, iDirectScreen = CDirectScreenAccess::NewL(
         iCoeEnv->WsSession(),
         *(iCoeEnv->ScreenDevice()),
         Window(),
-        *this);
-    CleanupStack::Pop();
+        *this));
+
+    if (err4 != KErrNone) {
+        return;
+    }
+
+    if (!iDirectScreen) {
+        User::Leave(KErrNoMemory);
+        return;
+    }
+
+    // Create a periodical timer for main loop.
+    TRAPD(errc, iTimer = CPeriodic::NewL(CActive::EPriorityLow));
+
+    if (errc != KErrNone) {
+        return;
+    }
 }
 
-void CRenderer::StartDirectScreenAccess(void)
+void CRenderer::StartPeriodic(void)
 {
     if (iDirectScreen && !iDirectScreen->IsActive()) {
 		// Start it.
@@ -243,10 +291,19 @@ void CRenderer::StartDirectScreenAccess(void)
         // If you need screen rect use DirectScreen->DrawingRegion->BoundingRect();
 		iScreenGc->SetClippingRegion(iDirectScreen->DrawingRegion());
 	}
+
+	if (iTimer && !iTimer->IsActive())
+	{
+		iTimer->Start(KMAXFPS,KMAXFPS,TCallBack (CRenderer::TimerCallback, this));
+	}
 }
 
-void CRenderer::StopDirectScreenAccess(void)
+void CRenderer::StopPeriodic(void)
 {
+    if (iTimer && iTimer->IsActive()) {
+        iTimer->Cancel();
+    }
+
     if (iDirectScreen && iDirectScreen->IsActive()) {
         iDirectScreen->Cancel();
     }
@@ -254,27 +311,67 @@ void CRenderer::StopDirectScreenAccess(void)
     iScreenGc = NULL;
 }
 
+void CRenderer::Render(void* pixels, TInt width, TInt height)
+{
+    if (iScreenGc && iRenderer) {
+        TRAPD(err1, iRenderer->BeginScene());
+        if (err1 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err2, iRenderer->Clear(0xff00ff));
+        if (err2 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err3, iRenderer->ClearStatisticCounters());
+        if (err3 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err4, iRenderer->SetTexture(pixels, width, height));
+        if (err4 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err5, iScreenGc->BitBlt(TPoint(0, 0), iRenderer->Bitmap()));
+        if (err5 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err6, iRenderer->EndScene());
+        if (err6 != KErrNone) {
+            return;
+        }
+
+        TRAPD(err7, iRenderer->Flip(iDirectScreen));
+        if (err7 != KErrNone) {
+            return;
+        }
+
+        // Keep the backlight on.
+        User::ResetInactivityTime();
+        // Suspend the current thread for a short while.
+        // Give some time to other threads and active objects.
+        User::After(0);
+    }
+}
+
 void CRenderer::Restart  (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 {
-    StartDirectScreenAccess();
+    StartPeriodic();
 }
 
 void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 {
-	StopDirectScreenAccess();
+    StopPeriodic();
 }
 
-void CRenderer::Render(void* pixels, TInt width, TInt height)
+TInt CRenderer::TimerCallback(TAny* aPtr)
 {
-    if (iScreenGc && iRenderer) {
-        iRenderer->BeginScene();
-        iRenderer->Clear(0x000000);
-        iRenderer->ClearStatisticCounters();
-        iRenderer->SetTexture(pixels, width, height);
-        iScreenGc->BitBlt(TPoint(0, 0), iRenderer->Bitmap());
-        iRenderer->EndScene();
-        iRenderer->Flip(iDirectScreen);
-    }
+    RDebug::Print(_L("TimerCallback"));
+    (STATIC_CAST(CRenderer*, aPtr))->Render(NULL, 176, 208);
+    return ETrue;
 }
 
 #endif // SDL_VIDEO_DRIVER_NGAGE

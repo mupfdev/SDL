@@ -37,26 +37,32 @@
 class CRenderer: public CCoeControl, public MDirectScreenAccess
 {
 public:
-    void ConstructL(const TDesC& aPath);
+    void ConstructL(void);
 
     ~CRenderer();
 
     // These functions are used when the applications gets or loses focus.
-    void StartDirectScreenAccess(void);
-    void StopDirectScreenAccess(void);
+    void StartPeriodic(void);
+    void StopPeriodic(void);
 
     void Render(void* pixels, TInt width, TInt height);
 
     void Restart  (RDirectScreenAccess::TTerminationReasons aReason);
     void AbortNow (RDirectScreenAccess::TTerminationReasons aReason);
 
+    static TInt TimerCallback(TAny* aPtr);
+
 private:
     // Direct screen access.
     CDirectScreenAccess* iDirectScreen;
     CFbsBitGc *iScreenGc;
+    RWindow *iWindow;
 
     // BackBuffer.
     CNRenderer *iRenderer;
+
+	// Periodic Timer.
+	CPeriodic *iTimer;
 };
 
 typedef struct SDL_VideoData

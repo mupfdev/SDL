@@ -35,7 +35,6 @@ extern "C" {
 }
 #endif
 
-
 #define NGAGE_SURFACE "SDL.internal.window.surface"
 
 bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
@@ -58,12 +57,15 @@ bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, 
     *format = mode->format;
     *pixels = framebuffer->pixels;
     *pitch = framebuffer->pitch;
+
     return true;
 }
 
 bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
+
+    RDebug::Print(_L("SDL: NGAGE_UpdateWindowFramebuffer"));
 
     if (!phdata->NGAGE_Renderer) {
         return false;
@@ -76,7 +78,7 @@ bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, 
         return SDL_SetError("%s: Unable to get the window surface.", __FUNCTION__);
     }
 
-    phdata->NGAGE_Renderer->Render(surface->pixels, surface->w, surface->h);
+    // tbd.
 
     return true;
 }
