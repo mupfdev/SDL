@@ -37,10 +37,11 @@ file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/storage/*.c"
   "${SDL3_SOURCE_DIR}/src/storage/generic/*.c"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
-  "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
-  "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
-  "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
-  "${SDL3_SOURCE_DIR}/src/thread/ngage/*.cpp"
+  "${SDL3_SOURCE_DIR}/src/thread/generic/*.c"
+  #"${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+  #"${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
+  #"${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+  #"${SDL3_SOURCE_DIR}/src/thread/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/*.c"
   "${SDL3_SOURCE_DIR}/src/time/ngage/*.cpp"
   "${SDL3_SOURCE_DIR}/src/time/unix/*.c"
@@ -72,8 +73,8 @@ set(test_static_libs
   ${CMAKE_CURRENT_BINARY_DIR}/libSDL3.a)
 
 set(test_libs
-  ${EPOC_LIB}/NRenderer.lib
   ${CMAKE_CURRENT_BINARY_DIR}/libSDL3.a
+  ${EPOC_LIB}/NRenderer.lib
   ${EPOC_LIB}/cone.lib
   ${EPOC_PLATFORM}/gcc/lib/gcc-lib/arm-epoc-pe/2.9-psion-98r2/libgcc.a
   ${EPOC_LIB}/bitgdi.lib
@@ -116,7 +117,8 @@ target_compile_definitions(
 target_compile_options(
   ngage_test
   PUBLIC
-  -O2)
+  -O2
+)
 
 target_include_directories(
   ngage_test

@@ -34,11 +34,10 @@
 #define SDL_HAPTIC_DISABLED   1
 #define SDL_JOYSTICK_DISABLED 1
 #define SDL_SENSOR_DISABLED   1
-
 #define SDL_FSOPS_POSIX        1
-#define SDL_MAIN_NEEDED        1
-#define SDL_MAIN_USE_CALLBACKS 1
-#define SDL_THREAD_NGAGE       1
+#define SDL_MAIN_NEEDED       1
+//#define SDL_THREAD_NGAGE    1
+#define SDL_THREADS_DISABLED  1
 #define SDL_VIDEO_DRIVER_NGAGE 1
 
 #define HAVE_ATAN     1
@@ -68,8 +67,6 @@
 #define isnanf(x) SDL_uclibc_isnanf(x)
 #define isinff(x) SDL_uclibc_isinff(x);
 
-#if defined(SDL_PLATFORM_NGAGE)
 extern void va_copy(char* dest, char* src);
-#endif
 
 #endif /* SDL_build_config_ngage_h_ */
