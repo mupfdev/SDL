@@ -45,7 +45,7 @@ public:
     void StartDirectScreenAccess(void);
     void StopDirectScreenAccess(void);
 
-    void Render(const SDL_Rect *&rects, int &numrects);
+    void Render(void* pixels, TInt width, TInt height);
 
     void Restart  (RDirectScreenAccess::TTerminationReasons aReason);
     void AbortNow (RDirectScreenAccess::TTerminationReasons aReason);
@@ -71,6 +71,7 @@ typedef struct SDL_VideoData
 
     SDL_DisplayMode mode;
     SDL_VideoDisplay display;
+    SDL_Window window;
 
 } SDL_VideoData;
 

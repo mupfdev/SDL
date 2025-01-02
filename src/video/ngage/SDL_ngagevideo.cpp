@@ -18,14 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
-
-#ifdef SDL_VIDEO_DRIVER_NGAGE
-
-#include "SDL_ngagevideo.h"
-#include "SDL_ngageevents_c.h"
-#include "SDL_ngageframebuffer_c.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,11 +28,20 @@ extern "C" {
 }
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_NGAGE
+
+#include "SDL_ngagevideo.h"
+#include "SDL_ngageevents_c.h"
+#include "SDL_ngageframebuffer_c.h"
+
 #define NGAGE_VIDEO_DRIVER_NAME "N-Gage"
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device);
 static bool NGAGE_VideoInit(SDL_VideoDevice *device);
 static void NGAGE_VideoQuit(SDL_VideoDevice *device);
+
+static bool NGAGE_GetDisplayBounds(SDL_VideoDevice* _this, SDL_VideoDisplay* display, SDL_Rect* rect);
+static bool NGAGE_GetDisplayModes(SDL_VideoDevice* _this, SDL_VideoDisplay* display);
 
 static SDL_VideoDevice* NGAGE_CreateDevice(void)
 {
@@ -68,6 +69,9 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
 
     device->VideoInit = NGAGE_VideoInit;
     device->VideoQuit = NGAGE_VideoQuit;
+
+    device->GetDisplayBounds = NGAGE_GetDisplayBounds;
+    device->GetDisplayModes = NGAGE_GetDisplayModes;
 
     device->CreateWindowFramebuffer = NGAGE_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = NGAGE_UpdateWindowFramebuffer;
@@ -154,28 +158,54 @@ static void NGAGE_VideoQuit(SDL_VideoDevice *device)
     return;
 }
 
+static bool NGAGE_GetDisplayBounds(SDL_VideoDevice* device, SDL_VideoDisplay* display, SDL_Rect* rect)
+{
+    if (!display) {
+        return false;
+    }
+
+    rect->x = 0;
+    rect->y = 0;
+    rect->w = display->current_mode->w;
+    rect->h = display->current_mode->h;
+
+    return true;
+}
+
+static bool NGAGE_GetDisplayModes(SDL_VideoDevice* device, SDL_VideoDisplay* display)
+{
+    SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
+    SDL_DisplayMode mode;
+
+    SDL_zero(mode);
+    mode.w = phdata->mode.w;
+    mode.h = phdata->mode.h;
+    mode.refresh_rate = phdata->mode.refresh_rate;
+    mode.format = phdata->mode.format;
+
+    if (!SDL_AddFullscreenDisplayMode(display, &mode)) {
+        return false;
+    }
+
+    return true;
+}
+
 CRenderer::~CRenderer()
 {
-    // Release Direct screen access.
     if (iDirectScreen)
     {
         iDirectScreen->Cancel();
         delete iDirectScreen;
     }
 
-    // Delete Renderer.
     delete iRenderer;
 }
 
 void CRenderer::ConstructL(const TDesC& aPath)
 {
-    // Create window.
     CreateWindowL();
-
-    // Set full screen size.
     SetExtentToWholeScreen();
 
-    // Create Back buffer.
     CleanupStack::PushL(iRenderer);
     iRenderer = CNRenderer::NewL();
     CleanupStack::Pop();
@@ -234,22 +264,14 @@ void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 	StopDirectScreenAccess();
 }
 
-void CRenderer::Render(const SDL_Rect *&rects, int &numrects)
+void CRenderer::Render(void* pixels, TInt width, TInt height)
 {
-	if (iScreenGc && iRenderer) {
+    if (iScreenGc && iRenderer) {
         iRenderer->BeginScene();
-
         iRenderer->Clear(0x000000);
         iRenderer->ClearStatisticCounters();
-
-        for (int i = 0; i < numrects; ++i) {
-            const SDL_Rect* rect = &rects[i];
-
-            TPoint top_left(rect->x, rect->y);
-            TPoint bottom_right(rect->x + rect->w, rect->y + rect->h);
-            iScreenGc->DrawRect(TRect(top_left, bottom_right));
-        }
-
+        iRenderer->SetTexture(pixels, width, height);
+        iScreenGc->BitBlt(TPoint(0, 0), iRenderer->Bitmap());
         iRenderer->EndScene();
         iRenderer->Flip(iDirectScreen);
     }

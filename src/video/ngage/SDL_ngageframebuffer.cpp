@@ -25,10 +25,39 @@
 #include "SDL_ngageframebuffer_c.h"
 #include "SDL_ngagevideo.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "../../SDL_properties_c.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #define NGAGE_SURFACE "SDL.internal.window.surface"
 
 bool NGAGE_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
+    SDL_Surface *framebuffer;
+    const SDL_DisplayMode *mode;
+    int w, h;
+
+    NGAGE_DestroyWindowFramebuffer(device, window);
+
+    mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+    framebuffer = SDL_CreateSurface(w, h, mode->format);
+
+    if (!framebuffer) {
+        return false;
+    }
+
+    SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), NGAGE_SURFACE, framebuffer);
+    *format = mode->format;
+    *pixels = framebuffer->pixels;
+    *pitch = framebuffer->pitch;
     return true;
 }
 
@@ -40,14 +69,21 @@ bool NGAGE_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, 
         return false;
     }
 
-    phdata->NGAGE_Renderer->Render(rects, numrects);
+    SDL_Surface *surface;
+
+    surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), NGAGE_SURFACE, NULL);
+    if (!surface) {
+        return SDL_SetError("%s: Unable to get the window surface.", __FUNCTION__);
+    }
+
+    phdata->NGAGE_Renderer->Render(surface->pixels, surface->w, surface->h);
 
     return true;
 }
 
 void NGAGE_DestroyWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window)
 {
-    return;
+    SDL_ClearProperty(SDL_GetWindowProperties(window), NGAGE_SURFACE);
 }
 
 #endif // SDL_VIDEO_DRIVER_NGAGE
