@@ -767,10 +767,15 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             (void)fclose(pFile);
         }
     }
+#elif defined(SDL_PLATFORM_NGAGE)
+    {
+        NGAGE_Print("%s%s\n", GetLogPriorityPrefix(priority), message);
+    }
 #endif
 #if defined(HAVE_STDIO_H) && \
+    !(defined (SDL_PLATFORM_NGAGE) || \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
-    !(defined(SDL_PLATFORM_WIN32))
+    !(defined(SDL_PLATFORM_WIN32)))
     (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif
 }

@@ -25,14 +25,30 @@
 #endif
 
 #include <e32std.h>
+#include <e32svr.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ngage_exit_app(int exitcode)
+void NGAGE_ExitApp(int exitcode)
 {
     User::Exit(exitcode);
+}
+
+void NGAGE_Print(const char *fmt, ...)
+{
+    char buffer[512] = { 0 };
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+
+    TBuf<512> buf;
+    buf.Copy(TPtrC8((TText8*)buffer));
+
+    RDebug::Print(_L("%S"), &buf);
 }
 
 #ifdef __cplusplus
