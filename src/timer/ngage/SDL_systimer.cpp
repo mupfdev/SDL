@@ -43,8 +43,7 @@ extern "C" {
 
     void SDL_SYS_DelayNS(Uint64 ns)
     {
-        TTimeIntervalMicroSeconds32 us = static_cast<TInt>(ns / 1000u);
-        User::After(us);
+        User::After(SDL_NS_TO_US(ns));
     }
 
 #ifdef __cplusplus
