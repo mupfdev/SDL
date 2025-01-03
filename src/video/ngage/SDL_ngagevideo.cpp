@@ -24,15 +24,17 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
+    void NGAGE_Print(const char* fmt, ...);
+
 #ifdef __cplusplus
 }
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_NGAGE
 
-#include "SDL_ngagevideo.h"
 #include "SDL_ngageevents_c.h"
 #include "SDL_ngageframebuffer_c.h"
+#include "SDL_ngagevideo.h"
 
 #define NGAGE_VIDEO_DRIVER_NAME "N-Gage"
 
@@ -61,7 +63,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        return 0;
+        return nullptr;
     }
 
     // Initialize internal N-Gage specific data.
@@ -69,7 +71,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     if (!phdata) {
         SDL_OutOfMemory();
         SDL_free(device);
-        return 0;
+        return nullptr;
     }
 
     device->internal = phdata;
@@ -106,7 +108,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     return device;
 }
 
-VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))((void*)0) /* Standard NULL. */ };
+VideoBootStrap NGAGE_bootstrap = { NGAGE_VIDEO_DRIVER_NAME, "N-Gage Video Driver", NGAGE_CreateDevice, (bool (*)(const SDL_MessageBoxData *, int *))nullptr };
 
 static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -117,6 +119,11 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device)
 static bool NGAGE_VideoInit(SDL_VideoDevice *device)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
+
+    if (!phdata)
+    {
+        return false;
+    }
 
     SDL_zero(phdata->mode);
     SDL_zero(phdata->display);
@@ -369,7 +376,6 @@ void CRenderer::AbortNow (RDirectScreenAccess::TTerminationReasons /*aReason*/)
 
 TInt CRenderer::TimerCallback(TAny* aPtr)
 {
-    RDebug::Print(_L("TimerCallback"));
     (STATIC_CAST(CRenderer*, aPtr))->Render(NULL, 176, 208);
     return ETrue;
 }

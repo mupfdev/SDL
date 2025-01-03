@@ -495,6 +495,7 @@ typedef unsigned long long uint64_t;
 typedef unsigned long uintptr_t;
 typedef signed long intptr_t;
 typedef long ssize_t;
+#define nullptr NULL
 
 #undef __NGAGE__
 #endif

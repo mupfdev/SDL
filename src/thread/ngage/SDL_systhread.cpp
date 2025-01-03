@@ -20,17 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#ifdef NULL
-# undef NULL
-#endif
-#include <e32std.h>
-
 extern "C" {
 
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 
 };
+
+#ifdef NULL
+#undef NULL
+#endif
+#include <e32std.h>
 
 static int object_count;
 

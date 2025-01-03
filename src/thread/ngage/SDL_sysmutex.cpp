@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #ifdef NULL
-# undef NULL
+#undef NULL
 #endif
 #include <e32std.h>
 
@@ -44,7 +44,7 @@ SDL_Mutex *SDL_CreateMutex(void)
     TInt status = CreateUnique(NewMutex, &rmutex, 0);
     if (status != KErrNone) {
         SDL_SetError("Couldn't create mutex.");
-        return ((SDL_Mutex*)(void*)0); // Standard NULL.
+        return (SDL_Mutex*)nullptr;
     }
     SDL_Mutex *mutex = new /*(ELeave)*/ SDL_Mutex;
     mutex->handle = rmutex.Handle();
@@ -53,7 +53,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 
 void SDL_LockMutex(SDL_Mutex *mutex)
 {
-    if (((void*)0) /* Standard NULL. */ == mutex) {
+    if (nullptr == mutex) {
         SDL_SetError("Passed a NULL mutex.");
         return;
     }
@@ -65,7 +65,7 @@ void SDL_LockMutex(SDL_Mutex *mutex)
 
 bool SDL_TryLockMutex(SDL_Mutex* mutex)
 {
-    if (((void*)0) /* Standard NULL. */ == mutex) {
+    if (nullptr == mutex) {
         SDL_SetError("Passed a NULL mutex.");
         return true;
     }
@@ -83,7 +83,7 @@ bool SDL_TryLockMutex(SDL_Mutex* mutex)
 
 void SDL_UnlockMutex(SDL_Mutex *mutex)
 {
-    if (((void*)0) /* Standard NULL. */ == mutex) {
+    if (nullptr == mutex) {
         SDL_SetError("Passed a NULL mutex.");
         return;
     }

@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #ifdef NULL
-# undef NULL
+#undef NULL
 #endif
 #include <e32std.h>
 

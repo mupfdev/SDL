@@ -22,13 +22,11 @@
 
 #ifdef SDL_VIDEO_DRIVER_NGAGE
 
-#include "SDL_ngagevideo.h"
-
-#include <w32std.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+    void NGAGE_Print(const char* fmt, ...);
 
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -37,11 +35,14 @@ extern "C" {
 }
 #endif
 
+#include "SDL_ngagevideo.h"
+
 void DisableKeyBlocking(SDL_VideoDevice* device);
 int  HandleWsEvent(SDL_VideoDevice *device, const TWsEvent &aWsEvent);
 
 void NGAGE_PumpEvents(SDL_VideoDevice *device)
 {
+#if 0
     SDL_VideoData *phdata = (SDL_VideoData *)device->internal;
 
     while (phdata->NGAGE_WsEventStatus != KRequestPending) {
@@ -52,6 +53,7 @@ void NGAGE_PumpEvents(SDL_VideoDevice *device)
         phdata->NGAGE_WsEventStatus = KRequestPending;
         phdata->NGAGE_WsSession.EventReady(&phdata->NGAGE_WsEventStatus);
     }
+#endif
 }
 
 static SDL_Scancode ConvertScancode(SDL_VideoDevice *device, int key)
@@ -130,9 +132,10 @@ static SDL_Scancode ConvertScancode(SDL_VideoDevice *device, int key)
         break;
     }
 
-    return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)((void*)0) /* Standard NULL. */);
+    return SDL_GetScancodeFromKey(keycode, (SDL_Keymod*)nullptr);
 }
 
+#if 0
 void DisableKeyBlocking(SDL_VideoDevice *device)
 {
     SDL_VideoData *phdata = (SDL_VideoData*)device->internal;
@@ -172,5 +175,6 @@ int HandleWsEvent(SDL_VideoDevice *device, const TWsEvent &aWsEvent)
     }
     return posted;
 }
+#endif
 
 #endif // SDL_VIDEO_DRIVER_NGAGE

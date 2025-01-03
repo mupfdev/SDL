@@ -22,9 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_NGAGE
 
-#include "SDL_ngageframebuffer_c.h"
-#include "SDL_ngagevideo.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,6 +31,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#include "SDL_ngageframebuffer_c.h"
+#include "SDL_ngagevideo.h"
 
 #define NGAGE_SURFACE "SDL.internal.window.surface"
 

@@ -22,6 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_NGAGE
 
+#include "../SDL_sysvideo.h"
+
 #ifndef _SDL_ngagevideo_h
 #define _SDL_ngagevideo_h
 
@@ -32,7 +34,6 @@
 #include <NRenderer.h>
 #include <coecntrl.h>
 #include <w32std.h>
-#include "../SDL_sysvideo.h"
 
 class CRenderer: public CCoeControl, public MDirectScreenAccess
 {
