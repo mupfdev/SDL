@@ -79,5 +79,5 @@ bool __unorddf2(double a, double b)
 
 void va_copy(char *dest, char *src)
 {
-    *dest = *src;
+    dest = src;
 }
